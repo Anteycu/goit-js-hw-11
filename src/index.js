@@ -1,3 +1,9 @@
+import fetchUserReq from './img-api';
+
+// fetchUserReq('yellow flower')
+//   .then(data => console.log(data))
+//   .catch(err => console.log(err.message));
+
 // розмітка для карток
 {
   /* <div class="photo-card">
