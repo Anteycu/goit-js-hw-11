@@ -9,6 +9,8 @@ const searchParams = new URLSearchParams({
   image_type: 'photo',
   orientation: 'horizontal',
   safesearch: 'true',
+  page: '',
+  per_page: 40,
 });
 
 const headers = {
@@ -17,9 +19,16 @@ const headers = {
 
 const fetchUserReq = async req => {
   searchParams.set('q', req);
+  searchParams.set('page', 1);
   return await axios.get(`${BASE_URL}?${searchParams}`, { headers });
   // key=${API_KEY}&q=${req}&image_type=photo&orientation=horizontal&safesearch=true
   // problem 2+ req words without "+" in result search string
 };
 
-export default fetchUserReq;
+const fetchMoreContent = async () => {
+  const page = searchParams.get('page');
+  searchParams.set('page', `${Number(page) + 1}`);
+  return await axios.get(`${BASE_URL}?${searchParams}`, { headers });
+};
+
+export { fetchUserReq, fetchMoreContent };
