@@ -9,7 +9,7 @@ const searchParams = new URLSearchParams({
   image_type: 'photo',
   orientation: 'horizontal',
   safesearch: 'true',
-  page: 1,
+  page: '',
   per_page: 40,
 });
 
@@ -19,6 +19,7 @@ const headers = {
 
 const fetchUserReq = req => {
   searchParams.set('q', req);
+  searchParams.set('page', '1');
   return axios.get(`${BASE_URL}?${searchParams}`, { headers });
 };
 
