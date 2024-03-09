@@ -9,7 +9,7 @@ const searchParams = new URLSearchParams({
   image_type: 'photo',
   orientation: 'horizontal',
   safesearch: 'true',
-  page: '',
+  page: 1,
   per_page: 40,
 });
 
@@ -17,18 +17,22 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-const fetchUserReq = async req => {
+const fetchUserReq = req => {
   searchParams.set('q', req);
-  searchParams.set('page', 1);
-  return await axios.get(`${BASE_URL}?${searchParams}`, { headers });
-  // key=${API_KEY}&q=${req}&image_type=photo&orientation=horizontal&safesearch=true
-  // problem 2+ req words without "+" in result search string
+  return axios.get(`${BASE_URL}?${searchParams}`, { headers });
 };
 
 const fetchMoreContent = async () => {
   const page = searchParams.get('page');
   searchParams.set('page', `${Number(page) + 1}`);
-  return await axios.get(`${BASE_URL}?${searchParams}`, { headers });
+
+  const {
+    data: { totalHits, hits },
+  } = await axios.get(`${BASE_URL}?${searchParams}`, { headers });
+
+  const isEnd = page >= Math.ceil(totalHits / searchParams.get('per_page'));
+
+  return { hits, isEnd };
 };
 
 export { fetchUserReq, fetchMoreContent };

@@ -7,48 +7,46 @@ const loadMoreBtnRef = document.querySelector('.load-more');
 formRef.addEventListener('submit', searchHandler);
 loadMoreBtnRef.addEventListener('click', loadMoreHandler);
 
-function searchHandler(e) {
+async function searchHandler(e) {
   e.preventDefault();
   const { searchQuery } = e.currentTarget.elements;
   galleryRef.innerHTML = '';
 
-  fetchUserReq(searchQuery.value)
-    .then(({ data }) => {
-      if (!data.totalHits) {
-        Notify.failure(
-          'Sorry, there are no images matching your search query. Please try again.'
-        );
-        return;
-      }
-      createMarkup(data);
-      loadMoreBtnRef.classList.remove('visually-hidden');
-    })
-    .catch(err =>
-      Notify.failure(`Error code:${err.code}. Details: ${err.response.data}`)
-    );
+  try {
+    const {
+      data: { totalHits, hits },
+    } = await fetchUserReq(searchQuery.value);
+    console.log(totalHits);
+    if (!totalHits) {
+      Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+      return;
+    }
+    createMarkup(hits);
+    loadMoreBtnRef.classList.remove('visually-hidden');
+  } catch (err) {
+    Notify.failure(`Error code:${err.code}. Details: ${err.response.data}`);
+  }
 }
 
-function loadMoreHandler() {
-  fetchMoreContent()
-    .then(({ data }) => {
-      console.log(data);
-      if (!data.totalHits) {
-        Notify.info(
-          "We're sorry, but you've reached the end of search results."
-        );
-        loadMoreBtnRef.classList.add('visually-hidden');
-        return;
-      }
-      createMarkup(data);
-    })
-    .catch(err => {
-      Notify.failure(`Error code:${err.code}. Details: ${err.response.data}`);
-    });
+async function loadMoreHandler() {
+  const { hits, isEnd } = await fetchMoreContent();
+
+  try {
+    if (isEnd) {
+      Notify.info("We're sorry, but you've reached the end of search results.");
+      loadMoreBtnRef.classList.add('visually-hidden');
+      return;
+    }
+    createMarkup(hits);
+  } catch (err) {
+    Notify.failure(`Error code:${err.code}. Details: ${err.response.data}`);
+  }
 }
 
-function createMarkup(dataObj) {
-  const { hits } = dataObj;
-  const cardsMarkup = hits.map(imgItem => {
+function createMarkup(dataArr) {
+  const cardsMarkup = dataArr.map(imgItem => {
     const {
       webformatURL,
       largeImageURL,
