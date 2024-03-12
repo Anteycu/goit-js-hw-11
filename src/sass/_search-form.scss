@@ -1,0 +1,24 @@
+.search-form {
+  display: flex;
+  gap: 10px;
+  font-size: 23px;
+}
+
+.search-form_input {
+  @extend %input;
+
+  &::placeholder {
+    color: #89667c;
+  }
+}
+
+.search-form_btn {
+  @extend %input;
+  padding-left: 12px;
+  padding-right: 12px;
+  background-color: #fff;
+
+  &:active {
+    background-color: #f0d1db;
+  }
+}
