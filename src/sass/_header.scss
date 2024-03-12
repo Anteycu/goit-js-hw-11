@@ -1,0 +1,20 @@
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 10px;
+  padding-bottom: 15px;
+  background-color: #ccc2ff;
+}
+
+.header_title {
+  align-self: flex-end;
+  font-size: 28px;
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: darkorchid;
+}
+
+// .header_search-form {
+//   padding-bottom: 15px;
+// }

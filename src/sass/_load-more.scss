@@ -1,0 +1,11 @@
+.load-more {
+  @extend %input;
+
+  padding: 10px 20px;
+  font-size: 25px;
+  background-color: #fff;
+
+  &:active {
+    background-color: #f0d1db;
+  }
+}
