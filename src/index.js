@@ -1,5 +1,7 @@
-import { fetchUserReq, fetchMoreContent } from './img-api';
 import { Notify } from 'notiflix';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+import { fetchUserReq, fetchMoreContent } from './img-api';
 
 const formRef = document.querySelector('#search-form');
 const galleryRef = document.querySelector('.gallery');
@@ -7,6 +9,8 @@ const loadMoreBtnRef = document.querySelector('.load-more');
 
 formRef.addEventListener('submit', searchHandler);
 loadMoreBtnRef.addEventListener('click', loadMoreHandler);
+
+let galleryInstance = null;
 
 function searchHandler(e) {
   e.preventDefault();
@@ -22,11 +26,10 @@ function searchHandler(e) {
         return;
       }
       createMarkup(hits);
+      galleryInstance = new SimpleLightbox('.gallery a');
       loadMoreBtnRef.classList.remove('visually-hidden');
     })
-    .catch(err =>
-      Notify.failure(`Error code:${err.code}. Details: ${err.response.data}`)
-    );
+    .catch(err => Notify.failure(`Error code:${err.code}. Details: ${err}`));
 }
 
 async function loadMoreHandler() {
@@ -39,6 +42,7 @@ async function loadMoreHandler() {
       return;
     }
     createMarkup(hits);
+    galleryInstance.refresh();
   } catch (err) {
     Notify.failure(`Error code:${err.code}. Details: ${err.response.data}`);
   }
@@ -56,23 +60,25 @@ function createMarkup(dataArr) {
       downloads,
     } = imgItem;
     return `
-  <div class="gallery_photo-card photo-card">
-   <img src="${webformatURL}" alt="${tags}" width="640" loading="lazy" />
-   <div class="photo-card_info info">
-     <p class="info-item">
-       <b>Likes ${likes}</b>
-     </p>
-     <p class="info-item">
-       <b>Views ${views}</b>
-     </p>
-     <p class="info-item">
-       <b>Comments ${comments}</b>
-     </p>
-     <p class="info-item">
-       <b>Downloads ${downloads}</b>
-     </p>
-   </div>
-  </div>`;
+   <div class="gallery_photo-card photo-card">
+   <a href="${largeImageURL}" class="photo-card_link">
+     <img src="${webformatURL}" alt="${tags}" width="640" loading="lazy" />
+     <div class="photo-card_info info">
+       <p class="info-item">
+         <b>Likes ${likes}</b>
+       </p>
+       <p class="info-item">
+         <b>Views ${views}</b>
+       </p>
+       <p class="info-item">
+         <b>Comments ${comments}</b>
+       </p>
+       <p class="info-item">
+         <b>Downloads ${downloads}</b>
+       </p>
+     </div>
+    </a>
+   </div>`;
   });
   galleryRef.insertAdjacentHTML('beforeend', cardsMarkup.join(''));
 }
