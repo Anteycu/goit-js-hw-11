@@ -26,6 +26,7 @@ function searchHandler(e) {
         return;
       }
       createMarkup(hits);
+      smoothScroll(galleryRef, 2, { isDivision: true });
       galleryInstance = new SimpleLightbox('.gallery a');
       loadMoreBtnRef.classList.remove('visually-hidden');
     })
@@ -42,9 +43,10 @@ async function loadMoreHandler() {
       return;
     }
     createMarkup(hits);
+    smoothScroll(galleryRef, 2);
     galleryInstance.refresh();
   } catch (err) {
-    Notify.failure(`Error code:${err.code}. Details: ${err.response.data}`);
+    Notify.failure(`Error code:${err.code}. Details: ${err}`);
   }
 }
 
@@ -81,4 +83,20 @@ function createMarkup(dataArr) {
    </div>`;
   });
   galleryRef.insertAdjacentHTML('beforeend', cardsMarkup.join(''));
+}
+
+function smoothScroll(galleryRef, cardQuantity, { isDivision } = false) {
+  const { height: cardHeight } =
+    galleryRef.firstElementChild.getBoundingClientRect();
+  let scrollDistance = null;
+  if (isDivision) {
+    scrollDistance = cardHeight / cardQuantity;
+  } else {
+    scrollDistance = cardHeight * cardQuantity;
+  }
+
+  window.scrollBy({
+    top: scrollDistance,
+    behavior: 'smooth',
+  });
 }
