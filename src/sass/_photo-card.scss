@@ -1,4 +1,8 @@
 .photo-card {
+  border: 1px solid #89667c;
+  border-radius: 5px;
+  box-shadow: 1px 1px 3px #b95d8d;
+
   & img {
     height: 220px;
     object-fit: cover;

@@ -1,18 +1,29 @@
 .header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 10px;
-  padding-bottom: 15px;
   background-color: #ccc2ff;
+
+  &_innerWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10px;
+    padding-bottom: 15px;
+  }
 }
 
 .header_title {
   align-self: flex-end;
-  font-size: 28px;
+  font-size: 23px;
   margin-top: 0;
   margin-bottom: 10px;
   color: darkorchid;
+
+  @media screen and (min-width: 768px) {
+    font-size: 25px;
+  }
+
+  @media screen and (min-width: 1200px) {
+    font-size: 28px;
+  }
 }
 
 // .header_search-form {
