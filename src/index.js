@@ -3,6 +3,11 @@ import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import { fetchUserReq, fetchMoreContent } from './img-api';
 
+Notify.init({
+  timeout: 5000,
+  clickToClose: true,
+});
+
 const formRef = document.querySelector('#search-form');
 const galleryRef = document.querySelector('.gallery');
 // const loadMoreBtnRef = document.querySelector('.load-more');
