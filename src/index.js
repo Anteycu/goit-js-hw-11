@@ -5,17 +5,24 @@ import { fetchUserReq, fetchMoreContent } from './img-api';
 
 const formRef = document.querySelector('#search-form');
 const galleryRef = document.querySelector('.gallery');
-const loadMoreBtnRef = document.querySelector('.load-more');
+// const loadMoreBtnRef = document.querySelector('.load-more');
+const observerGuardRef = document.querySelector('[data-guard]');
 
 formRef.addEventListener('submit', searchHandler);
-loadMoreBtnRef.addEventListener('click', loadMoreHandler);
+// loadMoreBtnRef.addEventListener('click', onLoadMore);
 
 let galleryInstance = null;
+
+const observOptions = {
+  root: null,
+  rootMargin: '300px',
+  threshold: 1.0,
+};
+const observer = new IntersectionObserver(loadMore, observOptions);
 
 function searchHandler(e) {
   e.preventDefault();
   const { searchQuery } = e.currentTarget.elements;
-  galleryRef.innerHTML = '';
 
   fetchUserReq(searchQuery.value)
     .then(({ data: { totalHits, hits } }) => {
@@ -25,21 +32,24 @@ function searchHandler(e) {
         );
         return;
       }
+      galleryRef.innerHTML = '';
       createMarkup(hits);
       smoothScroll(galleryRef, 2, { isDivision: true });
       galleryInstance = new SimpleLightbox('.gallery a');
-      loadMoreBtnRef.classList.remove('visually-hidden');
+      // loadMoreBtnRef.classList.remove('visually-hidden');
+      observer.observe(observerGuardRef);
     })
     .catch(err => Notify.failure(`Error code:${err.code}. Details: ${err}`));
 }
 
-async function loadMoreHandler() {
+async function onLoadMore() {
   const { hits, isEnd } = await fetchMoreContent();
 
   try {
     if (isEnd) {
       Notify.info("We're sorry, but you've reached the end of search results.");
-      loadMoreBtnRef.classList.add('visually-hidden');
+      // loadMoreBtnRef.classList.add('visually-hidden');
+      observer.unobserve(observerGuardRef);
       return;
     }
     createMarkup(hits);
@@ -48,6 +58,12 @@ async function loadMoreHandler() {
   } catch (err) {
     Notify.failure(`Error code:${err.code}. Details: ${err}`);
   }
+}
+
+function loadMore(entries, observer) {
+  entries.forEach(entry => {
+    entry.isIntersecting && onLoadMore();
+  });
 }
 
 function createMarkup(dataArr) {
@@ -85,7 +101,7 @@ function createMarkup(dataArr) {
   galleryRef.insertAdjacentHTML('beforeend', cardsMarkup.join(''));
 }
 
-function smoothScroll(galleryRef, cardQuantity, { isDivision } = false) {
+function smoothScroll(galleryRef, cardQuantity = 1, { isDivision } = false) {
   const { height: cardHeight } =
     galleryRef.firstElementChild.getBoundingClientRect();
   let scrollDistance = null;
