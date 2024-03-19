@@ -1,11 +1,19 @@
 .load-more {
   @extend %input;
 
+  margin-top: 20px;
   padding: 10px 20px;
   font-size: 25px;
   background-color: #fff;
 
   &:active {
     background-color: #f0d1db;
+  }
+
+  &:disabled {
+    background-color: darkgray;
+    color: #f0d1db;
+    border-color: #f0d1db;
+    cursor: auto;
   }
 }

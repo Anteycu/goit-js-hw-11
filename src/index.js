@@ -2,6 +2,7 @@ import { Notify } from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import { fetchUserReq, fetchMoreContent } from './img-api';
+// import Loader from './loader';
 
 Notify.init({
   timeout: 5000,
@@ -10,11 +11,11 @@ Notify.init({
 
 const formRef = document.querySelector('#search-form');
 const galleryRef = document.querySelector('.gallery');
-// const loadMoreBtnRef = document.querySelector('.load-more');
 const observerGuardRef = document.querySelector('[data-guard]');
+// const loadMore = new Loader({ selector: '.load-more', disabled: false });
 
 formRef.addEventListener('submit', searchHandler);
-// loadMoreBtnRef.addEventListener('click', onLoadMore);
+// loadMore.btnRef.addEventListener('click', onLoadMore);
 
 let galleryInstance = null;
 
@@ -39,21 +40,21 @@ function searchHandler(e) {
       }
       galleryRef.innerHTML = '';
       createMarkup(hits);
+      // loadMore.show();
+      observer.observe(observerGuardRef);
       smoothScroll(galleryRef, 2, { isDivision: true });
       galleryInstance = new SimpleLightbox('.gallery a');
-      // loadMoreBtnRef.classList.remove('visually-hidden');
-      observer.observe(observerGuardRef);
     })
     .catch(err => Notify.failure(`Error code:${err.code}. Details: ${err}`));
 }
 
 async function onLoadMore() {
-  const { hits, isEnd } = await fetchMoreContent();
+  // loadMore.toggleDisable();
 
   try {
+    const { hits, isEnd } = await fetchMoreContent();
     if (isEnd) {
       Notify.info("We're sorry, but you've reached the end of search results.");
-      // loadMoreBtnRef.classList.add('visually-hidden');
       observer.unobserve(observerGuardRef);
       return;
     }
@@ -63,6 +64,9 @@ async function onLoadMore() {
   } catch (err) {
     Notify.failure(`Error code:${err.code}. Details: ${err}`);
   }
+  // finally {
+  //   loadMore.toggleDisable();
+  // }
 }
 
 function loadMore(entries, observer) {
