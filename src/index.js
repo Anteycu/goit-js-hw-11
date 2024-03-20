@@ -1,30 +1,30 @@
-import { Notify } from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import { fetchUserReq, fetchMoreContent } from './img-api';
-// import Loader from './loader';
+import { errorHandler, warningHandler, infoHandler } from './errorHandler';
+import createMarkup from './createMarkup';
+import smoothScroll from './smoothScroll';
 
-Notify.init({
-  timeout: 5000,
-  clickToClose: true,
-});
+// **Load more with button (without infinity-scroll implementation)**
+// import Loader from './loader';
+// const loadMore = new Loader({ selector: '.load-more', disabled: false });
+// loadMore.btnRef.addEventListener('click', onLoadMore);
+
+// **Load more with infinity-scroll
+const observerGuardRef = document.querySelector('[data-guard]');
+const observer = new IntersectionObserver(loadMore, { rootMargin: '300px' });
+function loadMore(entries, observer) {
+  entries.forEach(entry => {
+    entry.isIntersecting && onLoadMore();
+  });
+}
 
 const formRef = document.querySelector('#search-form');
 const galleryRef = document.querySelector('.gallery');
-const observerGuardRef = document.querySelector('[data-guard]');
-// const loadMore = new Loader({ selector: '.load-more', disabled: false });
 
 formRef.addEventListener('submit', searchHandler);
-// loadMore.btnRef.addEventListener('click', onLoadMore);
 
-let galleryInstance = null;
-
-const observOptions = {
-  root: null,
-  rootMargin: '300px',
-  threshold: 1.0,
-};
-const observer = new IntersectionObserver(loadMore, observOptions);
+let galleryModal = null;
 
 function searchHandler(e) {
   e.preventDefault();
@@ -33,95 +33,37 @@ function searchHandler(e) {
   fetchUserReq(searchQuery.value)
     .then(({ data: { totalHits, hits } }) => {
       if (!totalHits) {
-        Notify.failure(
+        warningHandler(
           'Sorry, there are no images matching your search query. Please try again.'
         );
         return;
       }
       galleryRef.innerHTML = '';
-      createMarkup(hits);
+      createMarkup(hits, galleryRef);
       // loadMore.show();
       observer.observe(observerGuardRef);
-      smoothScroll(galleryRef, 2, { isDivision: true });
-      galleryInstance = new SimpleLightbox('.gallery a');
+      smoothScroll({ galleryRef, isDivision: true });
+      galleryModal = new SimpleLightbox('.gallery a');
     })
-    .catch(err => Notify.failure(`Error code:${err.code}. Details: ${err}`));
+    .catch(err => errorHandler(err));
 }
 
 async function onLoadMore() {
   // loadMore.toggleDisable();
-
   try {
     const { hits, isEnd } = await fetchMoreContent();
     if (isEnd) {
-      Notify.info("We're sorry, but you've reached the end of search results.");
+      infoHandler("We're sorry, but you've reached the end of search results.");
       observer.unobserve(observerGuardRef);
       return;
     }
-    createMarkup(hits);
-    smoothScroll(galleryRef, 2);
-    galleryInstance.refresh();
+    createMarkup(hits, galleryRef);
+    smoothScroll({ galleryRef });
+    galleryModal.refresh();
   } catch (err) {
-    Notify.failure(`Error code:${err.code}. Details: ${err}`);
+    errorHandler(err);
   }
   // finally {
   //   loadMore.toggleDisable();
   // }
-}
-
-function loadMore(entries, observer) {
-  entries.forEach(entry => {
-    entry.isIntersecting && onLoadMore();
-  });
-}
-
-function createMarkup(dataArr) {
-  const cardsMarkup = dataArr.map(imgItem => {
-    const {
-      webformatURL,
-      largeImageURL,
-      tags,
-      likes,
-      views,
-      comments,
-      downloads,
-    } = imgItem;
-    return `
-   <div class="gallery_photo-card photo-card">
-   <a href="${largeImageURL}" class="photo-card_link">
-     <img src="${webformatURL}" alt="${tags}" width="640" loading="lazy" />
-     <div class="photo-card_info info">
-       <p class="info-item">
-         <b>Likes ${likes}</b>
-       </p>
-       <p class="info-item">
-         <b>Views ${views}</b>
-       </p>
-       <p class="info-item">
-         <b>Comments ${comments}</b>
-       </p>
-       <p class="info-item">
-         <b>Downloads ${downloads}</b>
-       </p>
-     </div>
-    </a>
-   </div>`;
-  });
-  galleryRef.insertAdjacentHTML('beforeend', cardsMarkup.join(''));
-}
-
-function smoothScroll(galleryRef, cardQuantity = 1, { isDivision } = false) {
-  const { height: cardHeight } =
-    galleryRef.firstElementChild.getBoundingClientRect();
-  let scrollDistance = null;
-  if (isDivision) {
-    scrollDistance = cardHeight / cardQuantity;
-  } else {
-    scrollDistance = cardHeight * cardQuantity;
-  }
-
-  window.scrollBy({
-    top: scrollDistance,
-    behavior: 'smooth',
-  });
 }
